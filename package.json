@@ -1,0 +1,13 @@
+{
+  "name": "grokkinggenai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "stripe": "^22.2.0"
+  }
+}

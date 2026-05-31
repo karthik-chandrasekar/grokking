@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Grokking GenAI</title>
+<meta name="description" content="An interview-prep reference for LLMs, VLMs, and Vision-Language-Action models — 15 topics, 750 questions, and 150 essential papers." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+/* ============================================================
+   THEME TOKENS  —  rebrand the whole site by editing these.
+   ============================================================ */
+:root{
+  --bg:#FBFAF7;            /* warm paper            */
+  --bg-elev:#FFFFFF;       /* cards / raised        */
+  --bg-sunk:#F4F1EA;       /* code / inset          */
+  --text:#1C1A17;          /* warm ink              */
+  --text-soft:#6B6457;     /* secondary             */
+  --text-faint:#A39C8C;    /* tertiary / labels     */
+  --line:#E8E3D9;          /* hairlines             */
+  --line-strong:#DAD3C5;
+  --accent:#B45309;        /* spiced amber          */
+  --accent-ink:#8A3F07;    /* darker for hover      */
+  --accent-soft:rgba(180,83,9,.09);
+  --accent-line:rgba(180,83,9,.28);
+  --shadow:0 1px 2px rgba(28,26,23,.04), 0 12px 40px -12px rgba(28,26,23,.12);
+  --shadow-lg:0 2px 4px rgba(28,26,23,.05), 0 30px 70px -24px rgba(28,26,23,.22);
+
+  /* syntax tokens */
+  --tok-key:#B45309; --tok-str:#4D7C2F; --tok-com:#A8A296;
+  --tok-num:#9A3412; --tok-fn:#1C1A17;  --tok-punc:#6B6457;
+
+  --bar:64px;
+  --maxread:42rem;
+  --ease:cubic-bezier(.22,.61,.36,1);
+
+  --sans:"Newsreader",ui-serif,Georgia,serif;            /* body */
+  --display:"Fraunces","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#15130E;
+  --bg-elev:#1D1A13;
+  --bg-sunk:#1A1711;
+  --text:#ECE7DC;
+  --text-soft:#A9A192;
+  --text-faint:#766F5F;
+  --line:#2B271E;
+  --line-strong:#37322733;
+  --accent:#E5A85A;
+  --accent-ink:#F0BC78;
+  --accent-soft:rgba(229,168,90,.12);
+  --accent-line:rgba(229,168,90,.32);
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 50px -16px rgba(0,0,0,.55);
+  --shadow-lg:0 2px 6px rgba(0,0,0,.45), 0 40px 90px -30px rgba(0,0,0,.7);
+  --tok-key:#E5A85A; --tok-str:#9CCB6B; --tok-com:#6E6757;
+  --tok-num:#E8916B; --tok-fn:#ECE7DC;  --tok-punc:#A9A192;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:18px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+  transition:background .5s var(--ease), color .5s var(--ease);
+}
+/* subtle paper grain for depth */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+}
+html[data-theme="dark"] body::before{mix-blend-mode:screen;opacity:.6}
+
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+::selection{background:var(--accent-soft);color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+.mono{font-family:var(--mono);font-weight:500;letter-spacing:.12em;text-transform:uppercase;font-size:.7rem}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:60;height:var(--bar);
+  display:flex;align-items:center;gap:18px;
+  padding:0 clamp(16px,4vw,40px);
+  background:color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter:saturate(140%) blur(14px);
+  -webkit-backdrop-filter:saturate(140%) blur(14px);
+  border-bottom:1px solid transparent;
+  transition:border-color .3s var(--ease), background .5s var(--ease);
+}
+.topbar.scrolled{border-bottom-color:var(--line)}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:600;font-size:1.12rem;letter-spacing:-.01em;white-space:nowrap}
+.brand .glyph{
+  width:30px;height:30px;border-radius:9px;flex:none;
+  display:grid;place-items:center;color:#fff;
+  background:linear-gradient(150deg,var(--accent),var(--accent-ink));
+  box-shadow:0 4px 12px -4px var(--accent-line);
+  font-family:var(--display);font-weight:600;font-size:1rem;
+}
+html[data-theme="dark"] .brand .glyph{color:#1A1711}
+.brand small{font-family:var(--mono);font-weight:500;font-size:.6rem;letter-spacing:.14em;color:var(--text-faint);text-transform:uppercase;margin-left:2px}
+.spacer{flex:1}
+
+.nav-actions{display:flex;align-items:center;gap:6px}
+.iconbtn{
+  width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--text-soft);
+  transition:background .2s var(--ease),color .2s var(--ease);
+}
+.iconbtn:hover{background:var(--accent-soft);color:var(--text)}
+.iconbtn svg{width:19px;height:19px}
+
+.menu-btn{display:none}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);
+  font-weight:500;letter-spacing:.04em;text-transform:uppercase;font-size:.72rem;
+  padding:11px 18px;border-radius:11px;transition:all .2s var(--ease);white-space:nowrap;
+}
+.btn-accent{background:var(--accent);color:#fff;box-shadow:0 6px 18px -8px var(--accent-line)}
+html[data-theme="dark"] .btn-accent{color:#1A1711}
+.btn-accent:hover{background:var(--accent-ink);transform:translateY(-1px);box-shadow:0 10px 24px -8px var(--accent-line)}
+.btn-line{border:1px solid var(--line-strong);color:var(--text)}
+.btn-line:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.btn-ghost{color:var(--text-soft)}
+.btn-ghost:hover{color:var(--text)}
+.btn-lg{padding:15px 26px;font-size:.78rem;border-radius:13px}
+
+/* show/hide chrome by view */
+.only-read{display:none}
+body.mode-read .only-read{display:flex}
+body.mode-read .only-home{display:none}
+
+/* reading progress */
+.progress{position:fixed;top:var(--bar);left:0;height:2px;width:0;z-index:70;
+  background:linear-gradient(90deg,var(--accent),var(--accent-ink));
+  transition:width .12s linear;opacity:0}
+body.mode-read .progress{opacity:1}
+
+/* ============================================================
+   HOME  /  LANDING
+   ============================================================ */
+#home{display:none;position:relative;z-index:1}
+body.mode-home #home{display:block}
+#reader{display:none;position:relative;z-index:1}
+body.mode-read #reader{display:block}
+
+.wrap{max-width:1120px;margin:0 auto;padding:0 clamp(20px,5vw,48px)}
+
+.hero{padding:clamp(56px,11vw,140px) 0 clamp(40px,7vw,84px);position:relative}
+.hero .kicker{color:var(--accent);margin-bottom:26px;opacity:0}
+.hero h1{
+  font-family:var(--display);font-weight:600;
+  font-size:clamp(2.7rem,8.5vw,6.4rem);line-height:.98;letter-spacing:-.025em;
+  max-width:14ch;margin-bottom:30px;
+}
+.hero h1 .em{font-style:italic;font-weight:500;color:var(--accent)}
+.hero .lede{
+  font-size:clamp(1.18rem,2.4vw,1.55rem);line-height:1.5;color:var(--text-soft);
+  max-width:38ch;margin-bottom:40px;
+}
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:22px}
+.hero-note{font-family:var(--mono);font-weight:400;font-size:.74rem;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase}
+.hero-note b{color:var(--accent);font-weight:500}
+
+/* staggered intro */
+.reveal-load{opacity:0;transform:translateY(16px);animation:rise .9s var(--ease) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.28s}.d4{animation-delay:.4s}.d5{animation-delay:.52s}
+
+/* scroll reveal */
+[data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+[data-reveal].in{opacity:1;transform:none}
+
+.rule{height:1px;background:var(--line);border:0;margin:0}
+
+.section{padding:clamp(54px,9vw,104px) 0}
+.section-head{margin-bottom:clamp(34px,5vw,56px);max-width:54ch}
+.section-head .kicker{color:var(--accent);margin-bottom:16px;display:block}
+.section-head h2{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.4vw,3rem);line-height:1.05;letter-spacing:-.02em}
+.section-head p{color:var(--text-soft);font-size:1.15rem;margin-top:18px}
+
+/* value props */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,40px)}
+.feat .fnum{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--accent);margin-bottom:18px;display:block}
+.feat h3{font-family:var(--display);font-weight:600;font-size:1.3rem;margin-bottom:10px;letter-spacing:-.01em}
+.feat p{color:var(--text-soft);font-size:1.02rem;line-height:1.55}
+
+/* table of contents preview */
+.toc-preview{border-top:1px solid var(--line)}
+.toc-part-row{padding:30px 0 12px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.toc-part-row .pl{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;color:var(--text-faint)}
+.toc-part-row .pt{font-family:var(--display);font-weight:600;font-size:1.15rem;letter-spacing:-.01em}
+.toc-item{
+  display:flex;align-items:center;gap:20px;padding:20px 6px;border-top:1px solid var(--line);
+  transition:padding-left .25s var(--ease),background .25s var(--ease);position:relative;
+}
+.toc-item:hover{padding-left:18px;background:linear-gradient(90deg,var(--accent-soft),transparent 70%)}
+.toc-item .ci-num{font-family:var(--mono);font-size:.8rem;color:var(--text-faint);width:2ch;flex:none}
+.toc-item .ci-title{font-family:var(--display);font-weight:500;font-size:1.22rem;letter-spacing:-.01em;flex:1}
+.toc-item .ci-meta{display:flex;align-items:center;gap:10px}
+.tag{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--text-faint)}
+.tag.free{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.toc-item .arr{color:var(--text-faint);opacity:0;transform:translateX(-6px);transition:.25s var(--ease)}
+.toc-item:hover .arr{opacity:1;transform:none;color:var(--accent)}
+.lock{width:15px;height:15px;color:var(--text-faint);flex:none}
+
+/* pricing */
+.price-wrap{display:flex;justify-content:center}
+.price-card{
+  width:min(560px,100%);background:var(--bg-elev);border:1px solid var(--line);
+  border-radius:24px;padding:clamp(30px,5vw,52px);box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.price-card::after{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent-ink))}
+.price-card .pk{color:var(--accent);margin-bottom:18px;display:block}
+.price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.price-row .amt{font-family:var(--display);font-weight:600;font-size:clamp(3rem,7vw,4.2rem);line-height:1;letter-spacing:-.03em}
+.price-row .per{color:var(--text-soft);font-size:1rem}
+.price-card .pnote{color:var(--text-faint);font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:28px}
+.incl{list-style:none;display:grid;gap:14px;margin:0 0 30px}
+.incl li{display:flex;gap:13px;align-items:flex-start;color:var(--text-soft);font-size:1.05rem;line-height:1.45}
+.incl li svg{width:20px;height:20px;color:var(--accent);flex:none;margin-top:2px}
+.incl li b{color:var(--text);font-weight:600}
+.price-card .btn{width:100%;justify-content:center}
+.guarantee{text-align:center;margin-top:18px;color:var(--text-faint);font-size:.92rem}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:clamp(40px,7vw,72px) 0;position:relative;z-index:1}
+.foot-grid{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap}
+.foot-links{display:flex;gap:26px;flex-wrap:wrap}
+.foot-links a{color:var(--text-soft);font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;transition:color .2s}
+.foot-links a:hover{color:var(--accent)}
+.foot-meta{color:var(--text-faint);font-size:.86rem;margin-top:14px}
+
+/* ============================================================
+   READER
+   ============================================================ */
+.reader-grid{display:grid;grid-template-columns:312px 1fr;align-items:start}
+.sidebar{
+  position:sticky;top:var(--bar);height:calc(100vh - var(--bar));
+  border-right:1px solid var(--line);overflow-y:auto;padding:28px 22px 60px;
+  scrollbar-width:thin;
+}
+.sidebar::-webkit-scrollbar{width:8px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:99px}
+.search{position:relative;margin-bottom:24px}
+.search input{
+  width:100%;padding:11px 14px 11px 38px;border-radius:12px;border:1px solid var(--line);
+  background:var(--bg-sunk);color:var(--text);font-family:var(--sans);font-size:.95rem;
+  transition:border-color .2s,box-shadow .2s;
+}
+.search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-faint)}
+
+.toc-group{margin-bottom:26px}
+.toc-group-head{display:flex;align-items:baseline;gap:9px;padding:0 8px 10px}
+.toc-group-head .gl{font-family:var(--mono);font-size:.62rem;letter-spacing:.13em;color:var(--text-faint)}
+.toc-group-head .gt{font-family:var(--display);font-weight:600;font-size:.95rem;color:var(--text-soft);letter-spacing:-.01em}
+.toc-link{
+  display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;
+  color:var(--text-soft);transition:all .18s var(--ease);position:relative;
+}
+.toc-link:hover{background:var(--accent-soft);color:var(--text)}
+.toc-link.active{background:var(--accent-soft);color:var(--text)}
+.toc-link.active::before{content:"";position:absolute;left:-22px;top:8px;bottom:8px;width:3px;border-radius:99px;background:var(--accent)}
+.toc-link .tn{font-family:var(--mono);font-size:.72rem;color:var(--text-faint);width:2ch;flex:none}
+.toc-link.active .tn{color:var(--accent)}
+.toc-link .tt{font-size:.98rem;line-height:1.3;flex:1}
+.toc-link .lock{width:13px;height:13px}
+
+.reading{min-width:0;padding:clamp(34px,6vw,80px) clamp(20px,6vw,72px) 120px;display:flex;justify-content:center}
+.reading-col{width:100%;max-width:var(--maxread)}
+
+.chapter-head{margin-bottom:clamp(34px,5vw,52px)}
+.chapter-kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.13em;color:var(--accent);text-transform:uppercase;margin-bottom:20px}
+.chapter-title{font-family:var(--display);font-weight:600;font-size:clamp(2.1rem,5.5vw,3.7rem);line-height:1.02;letter-spacing:-.025em}
+
+/* PROSE — the heart of the reading experience */
+.prose{font-size:1.21rem;line-height:1.72;color:var(--text)}
+.prose > p{margin:0 0 1.4em}
+.prose > p:first-of-type::first-letter{
+  font-family:var(--display);font-weight:600;float:left;font-size:3.6em;line-height:.78;
+  padding:.06em .12em 0 0;color:var(--accent);
+}
+.prose h2{font-family:var(--display);font-weight:600;font-size:1.72rem;line-height:1.15;letter-spacing:-.02em;margin:2.2em 0 .7em;color:var(--text)}
+.prose h3{font-family:var(--display);font-weight:600;font-size:1.32rem;margin:1.8em 0 .5em;letter-spacing:-.01em}
+.prose a{color:var(--accent);text-decoration:underline;text-decoration-color:var(--accent-line);text-underline-offset:3px;text-decoration-thickness:1px;transition:text-decoration-color .2s}
+.prose a:hover{text-decoration-color:var(--accent)}
+.prose strong{font-weight:600;color:var(--text)}
+.prose em{font-style:italic}
+.prose ul,.prose ol{margin:0 0 1.5em;padding-left:1.4em}
+.prose li{margin:0 0 .55em;padding-left:.3em}
+.prose li::marker{color:var(--accent)}
+.prose blockquote{
+  margin:1.8em 0;padding:.4em 0 .4em 1.6em;border-left:3px solid var(--accent);
+  font-family:var(--display);font-style:italic;font-size:1.34rem;line-height:1.45;color:var(--text-soft);
+}
+.prose hr{height:1px;background:var(--line);border:0;margin:2.4em auto;width:40%}
+.prose img{max-width:100%;border-radius:14px;margin:1.6em 0;border:1px solid var(--line)}
+
+/* inline + block code */
+.prose code{font-family:var(--mono);font-size:.86em;background:var(--bg-sunk);padding:.18em .42em;border-radius:6px;border:1px solid var(--line)}
+.prose pre{
+  background:var(--bg-sunk);border:1px solid var(--line);border-radius:14px;
+  padding:20px 22px;overflow-x:auto;margin:1.7em 0;font-size:.92rem;line-height:1.6;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4);
+}
+html[data-theme="dark"] .prose pre{box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.prose pre code{background:none;border:0;padding:0;font-size:.95em}
+
+/* tables */
+.prose table{width:100%;border-collapse:collapse;margin:1.7em 0;font-size:.98rem}
+.prose th,.prose td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+.prose th{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);font-weight:500}
+.prose tr:hover td{background:var(--accent-soft)}
+
+/* KaTeX sizing */
+.prose .katex{font-size:1.04em}
+.prose .katex-display{margin:1.6em 0;overflow-x:auto;overflow-y:hidden;padding:.4em 0}
+
+/* syntax highlight tokens */
+.hljs-keyword,.hljs-built_in,.hljs-type,.hljs-literal,.hljs-name{color:var(--tok-key)}
+.hljs-string,.hljs-attr,.hljs-symbol,.hljs-bullet,.hljs-addition{color:var(--tok-str)}
+.hljs-comment,.hljs-quote,.hljs-meta{color:var(--tok-com);font-style:italic}
+.hljs-number,.hljs-deletion{color:var(--tok-num)}
+.hljs-title,.hljs-section,.hljs-title.function_,.hljs-title.class_{color:var(--tok-fn);font-weight:500}
+.hljs-params,.hljs-punctuation,.hljs-operator{color:var(--tok-punc)}
+
+/* locked fade + paywall */
+.chapter-body.is-locked{position:relative}
+.chapter-body.is-locked::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:180px;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,var(--bg));
+}
+.paywall{
+  margin-top:36px;background:var(--bg-elev);border:1px solid var(--line);border-radius:22px;
+  padding:clamp(28px,5vw,46px);text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.paywall::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent-ink))}
+.paywall .pw-lock{width:54px;height:54px;border-radius:15px;margin:0 auto 22px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.paywall .pw-lock svg{width:24px;height:24px}
+.paywall h3{font-family:var(--display);font-weight:600;font-size:1.7rem;letter-spacing:-.02em;margin-bottom:10px}
+.paywall p{color:var(--text-soft);max-width:42ch;margin:0 auto 24px;font-size:1.06rem;line-height:1.55}
+.paywall .pw-price{display:flex;align-items:baseline;justify-content:center;gap:10px;margin-bottom:24px}
+.paywall .pw-price .amt{font-family:var(--display);font-weight:600;font-size:2.4rem;letter-spacing:-.02em}
+.paywall .pw-price .note{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint)}
+.paywall .pw-btns{display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto}
+.paywall .btn{justify-content:center}
+
+/* prev / next */
+.prevnext{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:60px;max-width:var(--maxread);margin-left:auto;margin-right:auto;width:100%}
+.pn{
+  border:1px solid var(--line);border-radius:16px;padding:20px 22px;transition:all .2s var(--ease);
+  display:flex;flex-direction:column;gap:6px;background:var(--bg-elev);
+}
+.pn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pn.next{text-align:right;align-items:flex-end}
+.pn .pn-dir{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)}
+.pn .pn-title{font-family:var(--display);font-weight:600;font-size:1.12rem;letter-spacing:-.01em}
+.pn.empty{visibility:hidden}
+
+/* ============================================================
+   DRAWER OVERLAY (mobile / iPad portrait)
+   ============================================================ */
+.overlay{
+  position:fixed;inset:0;z-index:55;background:rgba(20,17,12,.4);backdrop-filter:blur(2px);
+  opacity:0;visibility:hidden;transition:.3s var(--ease);
+}
+body.drawer-open .overlay{opacity:1;visibility:visible}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-root{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px;
+  opacity:0;visibility:hidden;transition:.28s var(--ease)}
+.modal-root.open{opacity:1;visibility:visible}
+.modal-bg{position:absolute;inset:0;background:rgba(20,17,12,.55);backdrop-filter:blur(6px)}
+.modal{
+  position:relative;width:min(460px,100%);background:var(--bg-elev);border:1px solid var(--line);
+  border-radius:24px;padding:clamp(28px,5vw,40px);box-shadow:var(--shadow-lg);
+  transform:translateY(16px) scale(.98);transition:transform .28s var(--ease);
+}
+.modal-root.open .modal{transform:none}
+.modal .m-close{position:absolute;top:16px;right:16px}
+.modal .m-icon{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);margin-bottom:20px}
+.modal .m-icon svg{width:23px;height:23px}
+.modal h3{font-family:var(--display);font-weight:600;font-size:1.5rem;letter-spacing:-.02em;margin-bottom:10px}
+.modal p{color:var(--text-soft);font-size:1.02rem;line-height:1.55;margin-bottom:22px}
+.modal .m-field{margin-bottom:16px}
+.modal .m-field input{width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line-strong);background:var(--bg-sunk);color:var(--text);font-family:var(--sans);font-size:1rem}
+.modal .m-field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.modal .btn{width:100%;justify-content:center;margin-bottom:10px}
+.modal .m-fine{font-size:.84rem;color:var(--text-faint);text-align:center;line-height:1.5;margin-top:6px}
+.modal .m-fine code{font-family:var(--mono);font-size:.92em;background:var(--bg-sunk);padding:1px 5px;border-radius:4px}
+
+/* toast */
+.toast{
+  position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);z-index:95;
+  background:var(--text);color:var(--bg);padding:13px 22px;border-radius:14px;
+  font-family:var(--mono);font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;
+  box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transition:.3s var(--ease);
+}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:1023px){
+  .reader-grid{grid-template-columns:1fr}
+  body.mode-read .menu-btn{display:grid}
+  .sidebar{
+    position:fixed;top:0;left:0;z-index:58;height:100dvh;width:min(330px,86vw);
+    background:var(--bg);border-right:1px solid var(--line);padding-top:24px;
+    transform:translateX(-100%);transition:transform .34s var(--ease);box-shadow:var(--shadow-lg);
+  }
+  body.drawer-open .sidebar{transform:none}
+  .feats{grid-template-columns:1fr;gap:30px}
+}
+@media (max-width:600px){
+  body{font-size:17px}
+  .prose{font-size:1.12rem}
+  .hero-cta .btn{flex:1;justify-content:center}
+  .prevnext{grid-template-columns:1fr}
+  .pn.next{text-align:left;align-items:flex-start}
+  .nav-actions .label-hide{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  [data-reveal]{opacity:1;transform:none}
+}
+
+/* ============================================================
+   AUTH GATEWAY  (minimal landing) + auth forms + loading
+   — appended; reuses all tokens above. ──────────────────────
+   ============================================================ */
+body.mode-home #home{min-height:calc(100vh - var(--bar));display:flex;flex-direction:column}
+.gate{flex:1;display:flex;align-items:center;justify-content:center;padding:7vh 22px 13vh;position:relative;z-index:1}
+.gate-inner{max-width:46rem;text-align:center}
+.gate-eyebrow{color:var(--text-faint);letter-spacing:.18em;text-transform:uppercase;font-size:.72rem;margin-bottom:1.7rem}
+.gate-title{font-family:var(--display);font-weight:600;line-height:1.05;letter-spacing:-.02em;font-size:clamp(2.5rem,7vw,4.7rem);margin:0 0 1.4rem}
+.gate-title .em{color:var(--accent);font-style:italic}
+.gate-sub{color:var(--text-soft);font-size:1.1rem;line-height:1.6;max-width:34rem;margin:0 auto 2.5rem}
+.gate-actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.gate-fine{margin-top:1.6rem;color:var(--text-faint);font-size:.92rem}
+.gate-fine b{color:var(--text-soft);font-weight:600}
+.gate-fine .dot{opacity:.5;margin:0 .55em}
+.gate-fine a{color:var(--accent);border-bottom:1px solid var(--accent-line);padding-bottom:1px}
+@media(max-width:540px){ .gate-actions .btn{width:100%} }
+
+/* modal auth forms */
+.m-field + .m-field{margin-top:.6rem}
+.m-err{color:#b42318;font-size:.9rem;margin:.55rem 2px 0;min-height:1.1em;text-align:left;line-height:1.4}
+html[data-theme="dark"] .m-err{color:#f1a99b}
+.m-err a{color:inherit;text-decoration:underline}
+#modalBody .m-fine a{color:var(--accent);border-bottom:1px solid var(--accent-line)}
+
+/* chapter loading state */
+.chapter-body .loading{display:flex;align-items:center;gap:.7rem;color:var(--text-faint);padding:2.4rem 0;font-size:.98rem}
+.chapter-body .loading .spin{width:18px;height:18px;flex:none;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:ggspin .7s linear infinite}
+@keyframes ggspin{to{transform:rotate(360deg)}}
+
+</style>
+
+</head>
+<body class="mode-home">
+
+<!-- ============================================================
+     TOP BAR  (nav actions are rendered by JS per auth state)
+     ============================================================ -->
+<header class="topbar" id="topbar">
+  <button class="iconbtn menu-btn" id="menuBtn" aria-label="Open contents">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <a class="brand" href="#/" aria-label="Grokking GenAI home">
+    <span class="glyph">G</span>
+    <span>Grokking GenAI</span>
+  </a>
+  <div class="spacer"></div>
+  <div class="nav-actions" id="navActions"></div>
+</header>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     LANDING  (auth gateway — adapts to signed-out / unpaid / paid)
+     ============================================================ -->
+<main id="home">
+  <section class="gate">
+    <div class="gate-inner">
+      <div class="gate-eyebrow mono">grokkinggenai.com</div>
+      <h1 class="gate-title">Lets hard Grok the <span class="em">GenAI</span> universe</h1>
+      <p class="gate-sub" id="gateSub">An interview-prep reference for LLMs, VLMs, and Vision-Language-Action models — 15 topics, 750 interview questions, and 150 essential papers.</p>
+      <div class="gate-actions" id="gateActions"></div>
+      <div class="gate-fine" id="gateFine">One-time <b>$100</b><span class="dot">·</span>lifetime access</div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================================================
+     READER
+     ============================================================ -->
+<div id="reader">
+  <div class="reader-grid">
+    <aside class="sidebar" id="sidebar">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="search" placeholder="Search chapters…" aria-label="Search chapters">
+      </div>
+      <nav id="toc" aria-label="Table of contents"></nav>
+    </aside>
+    <main class="reading">
+      <div class="reading-col">
+        <article id="content"></article>
+        <nav class="prevnext" id="prevnext" aria-label="Chapter navigation"></nav>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- modal -->
+<div class="modal-root" id="modalRoot">
+  <div class="modal-bg" id="modalBg"></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="iconbtn m-close" id="modalClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- libraries (graceful: page still works if a CDN is blocked) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+/* ============================================================
+   Grokking GenAI — auth-gated reader (single-page, hash router)
+   Chapter bodies are fetched from /api/content only after the
+   reader is signed in AND has paid, so they never ship in source.
+   ============================================================ */
+
+/* Book metadata only (titles + structure). Bodies live server-side. */
+const BOOK = [
+  { label:"Part 01", part:"I · Large Language Models", chapters:[
+    { id:"llm-data", title:"Data Preparation" },
+    { id:"llm-pre",  title:"Pre-Training" },
+    { id:"llm-mid",  title:"Mid-Training" },
+    { id:"llm-post", title:"Post-Training" },
+    { id:"llm-rl",   title:"Post-Training · RL" },
+  ]},
+  { label:"Part 02", part:"II · Vision-Language Models", chapters:[
+    { id:"vlm-data", title:"Data Preparation" },
+    { id:"vlm-pre",  title:"Pre-Training" },
+    { id:"vlm-mid",  title:"Mid-Training" },
+    { id:"vlm-post", title:"Post-Training" },
+    { id:"vlm-rl",   title:"Post-Training · RL" },
+  ]},
+  { label:"Part 03", part:"III · Vision-Language-Action Models", chapters:[
+    { id:"vla-data", title:"Data Preparation" },
+    { id:"vla-pre",  title:"Pre-Training" },
+    { id:"vla-mid",  title:"Mid-Training" },
+    { id:"vla-post", title:"Post-Training" },
+    { id:"vla-rl",   title:"Post-Training · RL" },
+  ]},
+];
+
+const state = { auth:{ authenticated:false, email:null, paid:false }, currentId:null, booting:true };
+
+const FLAT = [];
+BOOK.forEach(p => p.chapters.forEach(c => FLAT.push({
+  ...c, partLabel:p.label, partTitle:p.part, chapNo:String(FLAT.length+1).padStart(2,"0")
+})));
+
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));
+
+/* ---------- API helper ---------- */
+async function api(path, opts={}){
+  let r;
+  try {
+    r = await fetch(path, { credentials:"same-origin", headers:{ "Content-Type":"application/json" }, ...opts });
+  } catch (_) {
+    return { ok:false, status:0, data:{ error:"Network error. Please check your connection." } };
+  }
+  let data = null;
+  try { data = await r.json(); } catch (_) {}
+  return { ok:r.ok, status:r.status, data: data || {} };
+}
+
+/* ---------- Markdown -> HTML (protect $math$ from the parser) ---------- */
+function renderMarkdown(md){
+  if(!window.marked || !marked.parse) return "<pre>"+esc(md)+"</pre>";
+  const math=[];
+  let s = md
+    .replace(/\$\$([\s\S]+?)\$\$/g, m=>{ math.push(m); return ` ZZMATHZZ${math.length-1}ZZ `; })
+    .replace(/\$([^\n$]+?)\$/g,     m=>{ math.push(m); return ` ZZMATHZZ${math.length-1}ZZ `; });
+  let html = marked.parse(s, { gfm:true, breaks:false });
+  html = html.replace(/ZZMATHZZ(\d+)ZZ/g, (_,i)=>math[+i]);
+  return html;
+}
+function enhance(el){
+  if(window.hljs) $$("pre code", el).forEach(b=>{ try{ hljs.highlightElement(b); }catch(e){} });
+  if(window.renderMathInElement){
+    try{ renderMathInElement(el,{
+      delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],
+      throwOnError:false, ignoredTags:["script","noscript","style","textarea","pre","code"]
+    }); }catch(e){}
+  }
+}
+
+/* ---------- Sidebar / chapter nav ---------- */
+function buildSidebar(){
+  $("#toc").innerHTML = BOOK.map(p=>`
+    <div class="toc-group">
+      <div class="toc-group-head"><span class="gl">${p.label}</span><span class="gt">${esc(p.part)}</span></div>
+      ${p.chapters.map(c=>{
+        const f = FLAT.find(x=>x.id===c.id);
+        return `<a class="toc-link" data-id="${c.id}" href="#/read/${c.id}">
+          <span class="tn">${f.chapNo}</span><span class="tt">${esc(c.title)}</span></a>`;
+      }).join("")}
+    </div>`).join("");
+}
+function highlightActive(id){ $$(".toc-link").forEach(a=>a.classList.toggle("active", a.dataset.id===id)); }
+function buildPrevNext(id){
+  const i = FLAT.findIndex(c=>c.id===id);
+  const prev = FLAT[i-1], next = FLAT[i+1];
+  $("#prevnext").innerHTML = `
+    ${prev ? `<a class="pn prev" href="#/read/${prev.id}"><span class="pn-dir">← Previous</span><span class="pn-title">${esc(prev.title)}</span></a>` : `<span class="pn empty"></span>`}
+    ${next ? `<a class="pn next" href="#/read/${next.id}"><span class="pn-dir">Next →</span><span class="pn-title">${esc(next.title)}</span></a>` : `<span class="pn empty"></span>`}
+  `;
+}
+
+/* ---------- Chapter body (gated, fetched, cached) ---------- */
+const cache = new Map();
+async function fetchChapter(id){
+  if(cache.has(id)) return cache.get(id);
+  const r = await fetch(`/api/content?id=${encodeURIComponent(id)}`, { credentials:"same-origin" });
+  if(!r.ok){ const e = new Error("load"); e.code = r.status; throw e; }
+  const data = await r.json();
+  cache.set(id, data.markdown);
+  return data.markdown;
+}
+async function showChapter(id){
+  const ch = FLAT.find(c=>c.id===id) || FLAT[0];
+  state.currentId = ch.id;
+  const art = $("#content");
+  art.innerHTML = `
+    <header class="chapter-head">
+      <div class="chapter-kicker">${ch.partLabel} · ${esc(ch.partTitle)} · Chapter ${ch.chapNo}</div>
+      <h1 class="chapter-title">${esc(ch.title)}</h1>
+    </header>
+    <div class="chapter-body prose"><div class="loading"><span class="spin"></span>Loading…</div></div>`;
+  buildSidebar(); highlightActive(ch.id); buildPrevNext(ch.id);
+  window.scrollTo(0,0); updateProgress();
+  try{
+    const md = await fetchChapter(ch.id);
+    if(state.currentId !== ch.id) return;           // user navigated away mid-fetch
+    const body = $(".chapter-body", art);
+    body.innerHTML = renderMarkdown(md);
+    enhance(body);
+    window.scrollTo(0,0); updateProgress();
+  }catch(err){
+    if(err.code === 401){ handleSignedOut("Your session expired — please log in again."); return; }
+    if(err.code === 402){ state.auth.paid = false; updateNav(); goHome(); renderGate(); openPurchase(); return; }
+    const body = $(".chapter-body", art);
+    if(body) body.innerHTML = `<p>Sorry — this chapter couldn't be loaded. Please refresh and try again.</p>`;
+  }
+}
+
+/* ---------- Mode switching ---------- */
+function goRead(){ document.body.classList.remove("mode-home"); document.body.classList.add("mode-read"); closeDrawer(); }
+function goHome(){ document.body.classList.remove("mode-read"); document.body.classList.add("mode-home"); window.scrollTo(0,0); }
+
+/* ---------- Auth state + header nav ---------- */
+async function refreshAuth(){
+  const { data } = await api("/api/me");
+  state.auth = { authenticated:!!data.authenticated, email:data.email||null, paid:!!data.paid };
+  updateNav();
+  return state.auth;
+}
+function updateNav(){
+  const a = state.auth;
+  const themeBtn = `<button class="iconbtn" id="themeBtn" aria-label="Toggle theme"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg></button>`;
+  let actions;
+  if(!a.authenticated){
+    actions = `<button class="btn btn-ghost label-hide" id="navLogin">Log in</button>${themeBtn}<button class="btn btn-accent" id="navCreate">Create account</button>`;
+  } else if(a.paid){
+    actions = `<a class="btn btn-ghost only-home label-hide" href="#/read/llm-data">Contents</a>${themeBtn}<button class="btn btn-line" id="navLogout">Sign out</button>`;
+  } else {
+    actions = `${themeBtn}<button class="btn btn-accent" id="navPay">Unlock · $100</button><button class="btn btn-ghost label-hide" id="navLogout">Sign out</button>`;
+  }
+  $("#navActions").innerHTML = actions;
+  bindTheme();
+  const on = (id, fn) => { const el = $("#"+id); if(el) el.onclick = fn; };
+  on("navLogin",  ()=>openLogin());
+  on("navCreate", ()=>openSignup());
+  on("navPay",    ()=>startCheckout());
+  on("navLogout", ()=>logout());
+}
+
+/* ---------- Landing gateway (adapts to auth state) ---------- */
+function renderGate(){
+  const a = state.auth;
+  const sub = $("#gateSub"), actions = $("#gateActions"), fine = $("#gateFine");
+  const signedAs = `Signed in as <b>${esc(a.email||"")}</b><span class="dot">·</span><a href="#" id="gOut">Sign out</a>`;
+  const bindOut = () => { const o = $("#gOut"); if(o) o.onclick = (e)=>{ e.preventDefault(); logout(); }; };
+
+  if(!a.authenticated){
+    sub.style.display = "";
+    sub.textContent = "An interview-prep reference for LLMs, VLMs, and Vision-Language-Action models — 15 topics, 750 interview questions, and 150 essential papers.";
+    actions.innerHTML = `<button class="btn btn-accent btn-lg" id="gCreate">Create account</button><button class="btn btn-line btn-lg" id="gLogin">Log in</button>`;
+    fine.innerHTML = `One-time <b>$100</b><span class="dot">·</span>lifetime access`;
+    $("#gCreate").onclick = ()=>openSignup();
+    $("#gLogin").onclick  = ()=>openLogin();
+  } else if(a.paid){
+    sub.style.display = "none";
+    actions.innerHTML = `<a class="btn btn-accent btn-lg" href="#/read/llm-data">Open the book →</a>`;
+    fine.innerHTML = signedAs; bindOut();
+  } else {
+    sub.style.display = "";
+    sub.textContent = "Your account is ready. Unlock lifetime access to all 15 topics — 750 interview questions and 150 essential papers.";
+    actions.innerHTML = `<button class="btn btn-accent btn-lg" id="gPay">Unlock everything — $100</button>`;
+    fine.innerHTML = signedAs;
+    $("#gPay").onclick = ()=>startCheckout();
+    bindOut();
+  }
+}
+
+/* ---------- Auth modals ---------- */
+const ICON_USER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>';
+const ICON_KEY  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18v3h3l8-8"/><path d="m9 11 4-4"/><circle cx="16.5" cy="7.5" r="4.5"/></svg>';
+const ICON_LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="11" width="17" height="10" rx="2.5"/><path d="M7.5 11V7a4.5 4.5 0 0 1 9 0v4"/></svg>';
+
+function openSignup(){
+  openModal(`
+    <div class="m-icon">${ICON_USER}</div>
+    <h3 id="modalTitle">Create your account</h3>
+    <p>Create an account and unlock lifetime access for a one-time <b>$100</b>.</p>
+    <div class="m-field"><input type="email" id="suEmail" placeholder="you@example.com" autocomplete="email"></div>
+    <div class="m-field"><input type="password" id="suPass" placeholder="Password (8+ characters)" autocomplete="new-password"></div>
+    <div class="m-err" id="suErr"></div>
+    <button class="btn btn-accent btn-lg" id="suBtn">Continue to payment — $100</button>
+    <p class="m-fine">Already have an account? <a href="#" id="suToLogin">Log in</a></p>
+  `);
+  const submit = async ()=>{
+    const email = $("#suEmail").value.trim(), pass = $("#suPass").value;
+    $("#suErr").textContent = "";
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ $("#suErr").textContent = "Please enter a valid email address."; return; }
+    if(pass.length < 8){ $("#suErr").textContent = "Password must be at least 8 characters."; return; }
+    const btn = $("#suBtn"); btn.disabled = true; btn.textContent = "Creating account…";
+    const { ok, status, data } = await api("/api/signup", { method:"POST", body:JSON.stringify({ email, password:pass }) });
+    if(!ok){
+      btn.disabled = false; btn.textContent = "Continue to payment — $100";
+      if(status === 409){
+        $("#suErr").innerHTML = 'That email already has an account. <a href="#" id="suGoLogin">Log in instead</a>.';
+        const g = $("#suGoLogin"); if(g) g.onclick = (e)=>{ e.preventDefault(); openLogin(); };
+      } else {
+        $("#suErr").textContent = data.error || "Something went wrong. Please try again.";
+      }
+      return;
+    }
+    state.auth = { authenticated:true, email:data.email, paid:false }; updateNav();
+    btn.textContent = "Redirecting to checkout…";
+    await startCheckout();          // sends them straight to Stripe
+  };
+  $("#suBtn").onclick = submit;
+  $("#suPass").addEventListener("keydown", e=>{ if(e.key === "Enter") submit(); });
+  $("#suToLogin").onclick = (e)=>{ e.preventDefault(); openLogin(); };
+  setTimeout(()=>{ const el = $("#suEmail"); if(el) el.focus(); }, 60);
+}
+
+function openLogin(){
+  openModal(`
+    <div class="m-icon">${ICON_KEY}</div>
+    <h3 id="modalTitle">Welcome back</h3>
+    <p>Log in to pick up where you left off.</p>
+    <div class="m-field"><input type="email" id="liEmail" placeholder="you@example.com" autocomplete="email"></div>
+    <div class="m-field"><input type="password" id="liPass" placeholder="Password" autocomplete="current-password"></div>
+    <div class="m-err" id="liErr"></div>
+    <button class="btn btn-accent btn-lg" id="liBtn">Log in</button>
+    <p class="m-fine">New here? <a href="#" id="liToCreate">Create an account</a></p>
+  `);
+  const submit = async ()=>{
+    const email = $("#liEmail").value.trim(), pass = $("#liPass").value;
+    $("#liErr").textContent = "";
+    if(!email || !pass){ $("#liErr").textContent = "Enter your email and password."; return; }
+    const btn = $("#liBtn"); btn.disabled = true; btn.textContent = "Logging in…";
+    const { ok, data } = await api("/api/login", { method:"POST", body:JSON.stringify({ email, password:pass }) });
+    if(!ok){ btn.disabled = false; btn.textContent = "Log in"; $("#liErr").textContent = data.error || "Incorrect email or password."; return; }
+    state.auth = { authenticated:true, email:data.email, paid:!!data.paid }; updateNav();
+    closeModal();
+    if(state.auth.paid){ toast("Welcome back"); location.hash = "#/read/" + (state.currentId || FLAT[0].id); route(); }
+    else { goHome(); renderGate(); openPurchase(); }
+  };
+  $("#liBtn").onclick = submit;
+  $("#liPass").addEventListener("keydown", e=>{ if(e.key === "Enter") submit(); });
+  $("#liToCreate").onclick = (e)=>{ e.preventDefault(); openSignup(); };
+  setTimeout(()=>{ const el = $("#liEmail"); if(el) el.focus(); }, 60);
+}
+
+function openPurchase(){
+  openModal(`
+    <div class="m-icon">${ICON_LOCK}</div>
+    <h3 id="modalTitle">One step left</h3>
+    <p>Your account is ready. Unlock lifetime access to all 15 topics — 750 interview questions and 150 essential papers — for a one-time <b>$100</b>.</p>
+    <button class="btn btn-accent btn-lg" id="puBtn">Pay $100 &amp; unlock</button>
+    <p class="m-fine">Signed in as ${esc(state.auth.email || "")} · <a href="#" id="puOut">Sign out</a></p>
+  `);
+  $("#puBtn").onclick = ()=>startCheckout();
+  $("#puOut").onclick = (e)=>{ e.preventDefault(); logout(); };
+}
+
+/* ---------- Checkout ---------- */
+async function startCheckout(){
+  const { ok, status, data } = await api("/api/checkout", { method:"POST", body:"{}" });
+  if(status === 401){ handleSignedOut("Please log in to continue."); return; }
+  if(data.alreadyPaid){ await refreshAuth(); closeModal(); toast("You already have access"); location.hash = "#/read/" + FLAT[0].id; route(); return; }
+  if(ok && data.url){ window.location.href = data.url; return; }
+  toast(data.error || "Couldn't start checkout. Please try again.");
+}
+async function confirmCheckout(sessionId){
+  if(!sessionId) return;
+  await api(`/api/confirm?session_id=${encodeURIComponent(sessionId)}`);
+  await refreshAuth();
+  if(state.auth.paid) toast("Payment received — enjoy the book!");
+}
+
+/* ---------- Sign out ---------- */
+async function logout(){
+  await api("/api/logout", { method:"POST", body:"{}" });
+  cache.clear();
+  state.auth = { authenticated:false, email:null, paid:false }; state.currentId = null;
+  updateNav(); closeModal(); goHome(); renderGate();
+  location.hash = ""; toast("Signed out");
+}
+function handleSignedOut(msg){
+  cache.clear();
+  state.auth = { authenticated:false, email:null, paid:false };
+  updateNav(); closeModal(); goHome(); renderGate();
+  location.hash = ""; if(msg) toast(msg);
+}
+
+/* ---------- Routing (auth-gated) ---------- */
+function route(){
+  const h = location.hash.replace(/^#\/?/, "");
+  const wantsRead = h === "read" || h.startsWith("read/");
+  if(wantsRead && state.auth.authenticated && state.auth.paid){
+    const id = h === "read" ? FLAT[0].id : h.slice(5);
+    goRead(); showChapter(id); updateTopbar(); return;
+  }
+  goHome(); renderGate(); updateTopbar();
+  if(wantsRead && !state.booting){
+    // tried to deep-link into the book without access
+    if(state.auth.authenticated && !state.auth.paid) openPurchase();
+    else openLogin();
+    history.replaceState(null, "", location.pathname);
+  }
+}
+window.addEventListener("hashchange", route);
+
+/* ---------- Modal / toast / drawer / theme / progress / search / keys ---------- */
+function openModal(html){ $("#modalBody").innerHTML = html; $("#modalRoot").classList.add("open"); }
+function closeModal(){ $("#modalRoot").classList.remove("open"); }
+$("#modalClose").onclick = closeModal;
+$("#modalBg").onclick = closeModal;
+
+let toastTimer;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 2800); }
+
+function openDrawer(){ document.body.classList.add("drawer-open"); }
+function closeDrawer(){ document.body.classList.remove("drawer-open"); }
+$("#menuBtn").onclick = openDrawer;
+$("#overlay").onclick = closeDrawer;
+$("#toc").addEventListener("click", e=>{ if(e.target.closest(".toc-link")) closeDrawer(); });
+
+const SUN  = '<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const MOON = '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>';
+function setTheme(t){ document.documentElement.setAttribute("data-theme", t); const i = $("#themeIcon"); if(i) i.innerHTML = t === "dark" ? SUN : MOON; }
+function bindTheme(){
+  const b = $("#themeBtn");
+  if(b) b.onclick = ()=>{
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    setTheme(next);
+    if(state.currentId && document.body.classList.contains("mode-read")) enhance($(".chapter-body"));
+  };
+  const i = $("#themeIcon");
+  if(i) i.innerHTML = document.documentElement.getAttribute("data-theme") === "dark" ? SUN : MOON;
+}
+
+function updateProgress(){
+  if(!document.body.classList.contains("mode-read")) return;
+  const h = document.documentElement;
+  const max = h.scrollHeight - h.clientHeight;
+  const pct = max > 0 ? (h.scrollTop || document.body.scrollTop) / max * 100 : 0;
+  $("#progress").style.width = pct + "%";
+}
+function updateTopbar(){ $("#topbar").classList.toggle("scrolled", window.scrollY > 8 || document.body.classList.contains("mode-read")); }
+window.addEventListener("scroll", ()=>{ updateProgress(); updateTopbar(); }, { passive:true });
+
+$("#search").addEventListener("input", e=>{
+  const q = e.target.value.trim().toLowerCase();
+  $$(".toc-group").forEach(g=>{
+    let any = false;
+    $$(".toc-link", g).forEach(a=>{
+      const hit = a.querySelector(".tt").textContent.toLowerCase().includes(q);
+      a.style.display = hit ? "" : "none";
+      if(hit) any = true;
+    });
+    g.style.display = any ? "" : "none";
+  });
+});
+
+document.addEventListener("keydown", e=>{
+  if(e.key === "Escape"){ closeModal(); closeDrawer(); }
+  if(/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+  if(!document.body.classList.contains("mode-read")) return;
+  const i = FLAT.findIndex(c=>c.id===state.currentId);
+  if(e.key === "ArrowRight" && FLAT[i+1]) location.hash = "#/read/" + FLAT[i+1].id;
+  if(e.key === "ArrowLeft"  && FLAT[i-1]) location.hash = "#/read/" + FLAT[i-1].id;
+});
+
+/* ---------- Init ---------- */
+(async function init(){
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  setTheme(prefersDark ? "dark" : "light");
+  buildSidebar();
+  updateNav();
+  renderGate();
+
+  await refreshAuth();
+  renderGate();
+
+  const params = new URLSearchParams(location.search);
+  if(params.get("checkout") === "success"){
+    await confirmCheckout(params.get("session_id"));
+    history.replaceState(null, "", location.pathname);
+    renderGate();
+    if(state.auth.paid) location.hash = "#/read/" + FLAT[0].id;
+  } else if(params.get("checkout") === "cancelled"){
+    history.replaceState(null, "", location.pathname);
+    toast("Checkout cancelled — you can complete it anytime.");
+  }
+
+  state.booting = false;
+  route();
+})();
+
+</script>
+</body>
+</html>
