@@ -1,0 +1,24 @@
+{
+  "name": "software-swarm",
+  "version": "1.0.0",
+  "description": "A five-agent software-building swarm on Claude Managed Agents",
+  "scripts": {
+    "setup": "tsx src/setup.ts",
+    "swarm": "tsx src/run.ts",
+    "typecheck": "tsc"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}
